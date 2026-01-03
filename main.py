@@ -322,7 +322,7 @@ def main():
     torch.set_num_threads(n_threads * 2 - 1)
     config_path = "./configs/my_config_dqn_cartpole.toml"
     name = "dqn_cartpole"
-    setup_env = init_env(config_path, name)
+    setup_env = init_env(config_path, name, launch_tensorboard=False)
     agent = Agent(setup_env)
     agent.run()
 

@@ -26,16 +26,21 @@ requires = ["uv_build>=0.9.21,<0.10.0"]
 build-backend = "uv_build"
 
 
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+# torch = [{ index = "pytorch-cu128" }]
+
 # pour installer pytorch cpu-only
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
-[tool.uv.sources]
-torch = [{ index = "pytorch-cpu" }]
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
 
 [tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = [
-    "pydantic.BaseModel",
-]
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
