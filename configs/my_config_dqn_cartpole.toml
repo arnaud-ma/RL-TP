@@ -1,0 +1,91 @@
+# ---------------------------------------------------------------------------- #
+#                                 Environnement                                 #
+# ---------------------------------------------------------------------------- #
+# nom de l'environnement
+env = "LunarLander-v3"
+seed = 5
+
+# device: si >=0, numéro de gpu, sinon cpu
+device = -1
+
+# longueur maximale des episodes (trajectoires)
+max_length_train = 1000
+max_length_test = 1000
+
+# ---------------------------------------------------------------------------- #
+#                                  Exploration                                 #
+# ---------------------------------------------------------------------------- #
+# epsilon <- max(epsilon_min, epsilon * epsilon_decay) à chaque étape
+epsilon_start = 0.9  # probabilité d'exploration initiale
+epsilon_min = 0.01  # probabilité d'exploration minimale
+epsilon_decay = 0.999995 # epsilon *= epsilon_decay à chaque étape
+# = (1 - 1/200000) pour atteindre epsilon_min vers la fin de l'entraînement
+# ---------------------------------------------------------------------------- #
+#                                 Apprentissage                                #
+# ---------------------------------------------------------------------------- #
+
+# facteur de discount (importance du reward futur)
+gamma = 0.99
+
+# taux d'apprentissage pour l'optimiseur (descente de gradient)
+learning_rate = 0.0005
+
+# taille du batch pour l'apprentissage de Q
+batch_size = 64
+
+# optimiseur à utiliser
+optimizer = "torch.optim:AdamW"
+
+# Fonction de loss pour Q. D'après le TP, c'est mieux la SmoothL1Loss (Huber Loss)
+# que la MSE en RL.
+value_loss = "torch.nn:SmoothL1Loss"
+
+# fréquence d'optimisation (en nombre d'évènements)
+freq_optim = 10
+
+# ---------------------------------------------------------------------------- #
+#                              Reseau de neurones                              #
+# ---------------------------------------------------------------------------- #
+
+# extracteur de features à partir des observations
+# NothingToDo: les observations sont utilisées telles quelles
+# on pourrait aussi normaliser les observations ici si besoin
+feature_extractor = "tp1_2.feature_extractor:NothingToDo"
+
+# couches cachées du réseau
+hidden_layers = [256, 256]
+
+# fonction d'activation
+hidden_layers_activation = "torch.nn:Tanh"
+
+# fonction d'activation de la couche finale
+final_layer_activation = "torch.nn:Identity"
+
+dropout = 0.0  # dropout rate (0.0 = pas de dropout)
+
+# ---------------------------------------------------------------------------- #
+#                                 Replay Buffer                                #
+# ---------------------------------------------------------------------------- #
+
+# capacité du replay buffer en nombre de transitions
+replay_memory_capacity = 100000
+
+replay_memory_min_size = 1000  # taille minimale du replay buffer avant de commencer l'apprentissage
+
+# si vrai, utilisation du prioritized replay
+prioritized_replay = true
+
+# ---------------------------------------------------------------------------- #
+#                          Entraînement et évaluation                          #
+# ---------------------------------------------------------------------------- #
+nb_episodes = 1000000  # nombre d'épisodes total
+
+# Test
+freq_test = 100  # fréquence d'épisodes de test (sans exploration)
+nb_tests = 5  # nombre d'épisodes de tests par session
+
+# Sauvegarde
+freq_save = 1000  # fréquence de sauvegarde du modèle (en nombre d'épisodes)
+
+# Visualisation
+freq_verbose = 10  # fréquence d'affichage de ce qu'il se passe
