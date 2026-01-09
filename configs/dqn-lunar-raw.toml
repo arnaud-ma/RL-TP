@@ -3,14 +3,34 @@
 # ---------------------------------------------------------------------------- #
 # nom de l'environnement
 env = "LunarLander-v3"
-seed = 5
+seed = 6
+render_mode = "terminal"  # human, terminal, both
+# freq_verbose_train = 0  # fréquence d'affichage de ce qu'il se passe en train. 0 = jamais
+# freq_verbose_test = 10  # fréquence d'affichage de ce qu'il se passe en test. 0 = jamais
+freq_verbose_train = 10
+freq_verbose_test = 1
+freq_animate_test = 1
+freq_animate_train = 0
 
-# device: si >=0, numéro de gpu, sinon cpu
-device = -1
 
-# longueur maximale des episodes (trajectoires)
+# "cpu" ou "cuda:0", ou juste 0 pour le premier GPU disponible
+device = "cpu"
+
+# longueur maximale des trajectoires pour chaque episode
 max_length_train = 1000
 max_length_test = 1000
+
+# ---------------------------------------------------------------------------- #
+#                          Entraînement et évaluation                          #
+# ---------------------------------------------------------------------------- #
+nb_episodes = 10_000  # nombre d'épisodes total
+
+# Test
+freq_test = 100  # fréquence d'épisodes de test (sans exploration)
+nb_tests = 10  # nombre d'épisodes de tests par session
+
+# Sauvegarde
+freq_save = 1000  # fréquence de sauvegarde du modèle (en nombre d'épisodes)
 
 # ---------------------------------------------------------------------------- #
 #                                  Exploration                                 #
@@ -18,8 +38,8 @@ max_length_test = 1000
 # epsilon <- max(epsilon_min, epsilon * epsilon_decay) à chaque étape
 epsilon_start = 0.9  # probabilité d'exploration initiale
 epsilon_min = 0.01  # probabilité d'exploration minimale
-epsilon_decay = 0.999995 # epsilon *= epsilon_decay à chaque étape
-# = (1 - 1/200000) pour atteindre epsilon_min vers la fin de l'entraînement
+epsilon_decay = 0.999998 # epsilon *= epsilon_decay à chaque étape
+# = (1 - 1/500_000)
 # ---------------------------------------------------------------------------- #
 #                                 Apprentissage                                #
 # ---------------------------------------------------------------------------- #
@@ -27,11 +47,11 @@ epsilon_decay = 0.999995 # epsilon *= epsilon_decay à chaque étape
 # facteur de discount (importance du reward futur)
 gamma = 0.99
 
-# taux d'apprentissage pour l'optimiseur (descente de gradient)
-learning_rate = 0.0005
-
-# taille du batch pour l'apprentissage de Q
+# taille du batch pour l'apprentissage de Q. Inutile si pas de replay buffer.
 batch_size = 64
+
+# taux d'apprentissage pour l'optimiseur (descente de gradient)
+learning_rate = 0.0003
 
 # optimiseur à utiliser
 optimizer = "torch.optim:AdamW"
@@ -41,7 +61,10 @@ optimizer = "torch.optim:AdamW"
 value_loss = "torch.nn:SmoothL1Loss"
 
 # fréquence d'optimisation (en nombre d'évènements)
-freq_optim = 10
+train_freq = 4
+use_target_network = false  # si vrai, utilisation d'un réseau cible pour le calcul des cibles
+target_update_freq = 1000
+target_soft_update = 0 # tau pour soft update (0.0 = pas de soft update)
 
 # ---------------------------------------------------------------------------- #
 #                              Reseau de neurones                              #
@@ -53,10 +76,10 @@ freq_optim = 10
 feature_extractor = "tp1_2.feature_extractor:NothingToDo"
 
 # couches cachées du réseau
-hidden_layers = [256, 256]
+hidden_layers = [128, 128]
 
 # fonction d'activation
-hidden_layers_activation = "torch.nn:Tanh"
+hidden_layers_activation = "torch.nn:ReLU"
 
 # fonction d'activation de la couche finale
 final_layer_activation = "torch.nn:Identity"
@@ -67,25 +90,12 @@ dropout = 0.0  # dropout rate (0.0 = pas de dropout)
 #                                 Replay Buffer                                #
 # ---------------------------------------------------------------------------- #
 
+
 # capacité du replay buffer en nombre de transitions
-replay_memory_capacity = 100000
+# 0 pour complètement désactiver le replay buffer (apprentissage en ligne)
+replay_memory_capacity = 0
 
 replay_memory_min_size = 1000  # taille minimale du replay buffer avant de commencer l'apprentissage
 
 # si vrai, utilisation du prioritized replay
-prioritized_replay = true
-
-# ---------------------------------------------------------------------------- #
-#                          Entraînement et évaluation                          #
-# ---------------------------------------------------------------------------- #
-nb_episodes = 1000000  # nombre d'épisodes total
-
-# Test
-freq_test = 100  # fréquence d'épisodes de test (sans exploration)
-nb_tests = 5  # nombre d'épisodes de tests par session
-
-# Sauvegarde
-freq_save = 1000  # fréquence de sauvegarde du modèle (en nombre d'épisodes)
-
-# Visualisation
-freq_verbose = 10  # fréquence d'affichage de ce qu'il se passe
+prioritized_replay = false

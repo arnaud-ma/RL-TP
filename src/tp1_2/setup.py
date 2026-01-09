@@ -10,12 +10,12 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from tp1_2 import logging
-from tp1_2.config import ConfigModel, load_config
+from tp1_2.config import ConfigDQN, load_config
 from tp1_2.gym_env import DualEnvWrapper
 from tp1_2.logging import TensorboardLogger
 
 
-def init_random_seed(config: ConfigModel) -> None:
+def init_random_seed(config: ConfigDQN) -> None:
     random.seed(config.seed)
     np.random.seed(config.seed)  # noqa: NPY002
     torch.manual_seed(config.seed)
@@ -30,7 +30,7 @@ def get_outdir(run_name: str, env_name: str):
     return outdir
 
 
-class SetupEnv(NamedTuple):
+class SetupEnv[T](NamedTuple):
     """A named tuple containing the setup components for a reinforcement learning
     environment.
 
@@ -45,14 +45,15 @@ class SetupEnv(NamedTuple):
     """
 
     env: DualEnvWrapper
-    config: ConfigModel
+    config: T
     outdir: Path
     logger: logging.TensorboardLogger
 
 
-def init_env(
+def init_env[T](
     config_file: str | Path,
     name: str,
+    kind: type[T] = ConfigDQN,
     *,
     launch_tensorboard: bool = True,
 ) -> SetupEnv:
@@ -74,6 +75,8 @@ def init_env(
             resolved to an absolute path.
         name (str): Name of the run, used for creating output
             directories and logging.
+        launch_tensorboard (bool, optional): Whether to launch TensorBoard
+            for logging. Defaults to True.
 
     Returns:
         - SetupEnv: A named tuple containing the initialized environment,
@@ -81,7 +84,7 @@ def init_env(
     """
     config_file = Path(config_file).expanduser().resolve()
 
-    config = load_config(config_file)
+    config = load_config(config_file, kind)
     print("Loaded config:")
     rich.print(config)
 
@@ -91,7 +94,7 @@ def init_env(
         torch.backends.cudnn.benchmark = False
 
     outdir = get_outdir(run_name=name, env_name=config.env)
-    shutil.copy2(config_file, outdir / config_file.name)
+    shutil.copy2(config_file, outdir / "config.toml")
 
     writer = SummaryWriter(log_dir=outdir / "tensorboard")
     logger = TensorboardLogger(writer)
@@ -101,3 +104,40 @@ def init_env(
     env = DualEnvWrapper(config.config_env)
     env.reset()
     return SetupEnv(env, config, outdir, logger)
+
+
+def init_raw_env(
+    config_file: str | Path,
+    kind: type[ConfigDQN] = ConfigDQN,
+) -> tuple[DualEnvWrapper, ConfigDQN]:
+    """
+    Initialize the raw environment without any additional setup components.
+
+    It:
+    - loads configuration from the specified file
+    - initializes random seed based on config
+    - optionally sets deterministic CUDA behavior if specified in config
+      ('deterministic_config' flag in the config file).
+
+    Args:
+        config_file (str | Path): Path to the configuration file.
+            Can be a string or Path object. The path will be expanded and
+            resolved to an absolute path.
+
+    Returns:
+        - DualEnvWrapper: The initialized raw environment instance.
+    """
+    config_file = Path(config_file).expanduser().resolve()
+
+    config = load_config(config_file, kind)
+    print("Loaded config:")
+    rich.print(config)
+
+    init_random_seed(config)
+    if config.deterministic_config:
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+    env = DualEnvWrapper(config.config_env)
+    env.reset()
+    return env, config

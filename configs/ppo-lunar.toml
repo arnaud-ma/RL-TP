@@ -1,0 +1,266 @@
+# ============================================================================ #
+#                   PPO Configuration for LunarLander-v3                       #
+# ============================================================================ #
+# LunarLander-v3 is a classic control task where the agent must land a lunar
+# lander safely on a landing pad. The environment has:
+# - State space: 8 continuous values (position, velocity, angle, etc.)
+# - Action space: 4 discrete actions (do nothing, left engine, main engine, right engine)
+# - Reward: +100 for landing in goal area, -100 for crashing, small penalties for fuel
+# - Episode ends: landing, crashing, or timeout (1000 steps)
+# - Solved: average reward ≥ 200 over 100 consecutive episodes
+# ============================================================================ #
+
+# ---------------------------------------------------------------------------- #
+#                            Environment Settings                              #
+# ---------------------------------------------------------------------------- #
+
+env = "LunarLander-v3"
+seed = 42              # for reproducibility
+
+# Device: "cpu", "cuda", "mps", or GPU index like 0
+device = "cpu"
+
+# Rendering: "human" (GUI), "terminal" (ASCII), "both", or "none"
+render_mode = "terminal"
+
+# Whether to use deterministic operations (slower but reproducible)
+deterministic_config = false
+
+# ---------------------------------------------------------------------------- #
+#                           Episode Length Limits                              #
+# ---------------------------------------------------------------------------- #
+
+# Maximum steps per training episode (LunarLander default timeout: 1000)
+max_length_train = 1000
+
+# Maximum steps per test episode
+max_length_test = 1000
+
+# ---------------------------------------------------------------------------- #
+#                            Training Schedule                                 #
+# ---------------------------------------------------------------------------- #
+
+# Total number of policy updates to perform
+# Each update collects trajectories, then optimizes for num_epochs
+num_updates = 500
+
+# Number of environment steps to collect before each policy update
+# Typical range: 2048-4096 for simple envs, 8192-32768 for complex envs
+# LunarLander is relatively simple, so 2048 is sufficient
+steps_per_update = 2048
+
+# Stop training when test reward exceeds this threshold
+# LunarLander is considered solved at 200
+stop_when_test_higher_than = 250.0
+
+# Test every N updates
+freq_test = 10
+
+# Number of episodes to run during each test
+nb_tests = 10
+
+# Save model every N updates
+freq_save = 50
+
+# Print training info every N updates (0 = never)
+freq_verbose_train = 1
+
+# Print test info every N tests (0 = never)
+freq_verbose_test = 1
+
+feature_extractor = "tp1_2.feature_extractor:NothingToDo"
+# ---------------------------------------------------------------------------- #
+#                          Core PPO Hyperparameters                            #
+# ---------------------------------------------------------------------------- #
+
+# γ: Discount factor for future rewards
+# Higher values (0.99-0.999) make agent more far-sighted
+# For episodic tasks like LunarLander, 0.99 is standard
+gamma = 0.99
+
+# λ: GAE (Generalized Advantage Estimation) parameter
+# Balances bias-variance tradeoff in advantage estimation
+# λ=0: high bias, low variance (pure TD)
+# λ=1: low bias, high variance (pure Monte Carlo)
+# 0.95-0.98 is typical sweet spot
+gae_lambda = 0.95
+
+# ε: PPO clipping parameter
+# Limits how much the policy can change in one update
+# Prevents destructively large policy updates
+# Typical range: 0.1-0.3, with 0.2 being most common
+clip_epsilon = 0.2
+
+# β: Initial KL divergence penalty coefficient
+# Penalizes policy changes that are too large (measured by KL divergence)
+# This will be adapted during training based on observed KL
+# Start conservative with 0.5-1.0
+beta_init = 0.5
+
+# δ: Target KL divergence
+# If observed KL > 1.5*target_kl: increase β (be more conservative)
+# If observed KL < target_kl/1.5: decrease β (allow more change)
+# Typical values: 0.01-0.05
+target_kl = 0.02
+
+# ---------------------------------------------------------------------------- #
+#                         Optimization Hyperparameters                         #
+# ---------------------------------------------------------------------------- #
+
+# K: Number of epochs to train on each batch of collected data
+# PPO reuses data multiple times (unlike pure policy gradient)
+# Too few: inefficient, too many: overfitting to old data
+# Typical range: 3-10, with 4-5 being common
+num_epochs = 4
+
+# Minibatch size for SGD
+# Must divide steps_per_update evenly (or handle remainder)
+# Typical: 32-256 depending on steps_per_update
+# For steps_per_update=2048, use 64 → 32 minibatches per epoch
+batch_size = 64
+
+# c₁: Value function loss coefficient
+# Weighs value loss relative to policy loss
+# Typical range: 0.5-1.0
+value_loss_coef = 0.5
+
+# c₂: Entropy bonus coefficient
+# Encourages exploration by rewarding policy entropy
+# Higher values → more exploration, lower values → more exploitation
+# Typical range: 0.0-0.01
+# Start higher (0.01) for exploration, can decay to 0.0
+entropy_coef = 0.01
+
+# α_π: Learning rate for policy network
+# PPO is stable, so can use higher learning rates than DQN
+# Typical range: 1e-4 to 5e-4
+# Can use learning rate schedule (linear decay) for better performance
+policy_lr = 3e-4
+
+# α_V: Learning rate for value network
+# Often same as policy_lr, but can be higher (value is easier to learn)
+# Typical range: 1e-4 to 1e-3
+value_lr = 3e-4
+
+# Gradient clipping: max L2 norm of gradients
+# Prevents exploding gradients
+# 0 = disabled, typical values: 0.5-1.0
+# PPO is quite stable, so clipping is optional
+clip_grad_norm = 0.5
+
+# ---------------------------------------------------------------------------- #
+#                          Value Network Architecture                          #
+# ---------------------------------------------------------------------------- #
+
+# Hidden layer sizes for value network V_φ(s): S → ℝ
+# LunarLander has 8 state dimensions, so relatively small network suffices
+# Typical architectures:
+# - Small: [64, 64] - fast, may underfit
+# - Medium: [128, 128] or [256, 128] - good default
+# - Large: [256, 256] - may overfit on simple tasks
+value_hidden_layers = [128, 128]
+
+# Activation function between hidden layers
+# Options: torch.nn.ReLU, torch.nn.Tanh, torch.nn.ELU, torch.nn.GELU
+# ReLU is most common and computationally efficient
+value_hidden_layers_activation = "torch.nn.ReLU"
+
+# Final activation function (before output)
+# For value networks, typically None (linear output)
+value_activation = "torch.nn:Identity"
+
+# Dropout rate for regularization (0.0 = no dropout)
+# Usually not needed for PPO as we collect new data frequently
+# Can help if overfitting observed
+value_dropout = 0.0
+
+# ---------------------------------------------------------------------------- #
+#                         Policy Network Architecture                          #
+# ---------------------------------------------------------------------------- #
+
+# Hidden layer sizes for policy network π_θ(a|s): S → ℝ^|A|
+# Should be similar or slightly larger than value network
+# Policy is typically harder to learn than value
+policy_hidden_layers = [128, 128]
+
+# Activation function between hidden layers
+# ReLU is standard, but Tanh can work well for policy networks
+# (keeps activations bounded, which can stabilize learning)
+policy_hidden_layers_activation = "torch.nn.ReLU"
+
+# Final activation function
+# For discrete action spaces: None (raw logits → softmax later)
+# For continuous action spaces: None for mean, softplus for std
+policy_activation = "torch.nn:Identity"
+
+# Dropout rate (usually 0.0 for policy networks)
+policy_dropout = 0.0
+
+# ============================================================================ #
+#                            Alternative Configurations                         #
+# ============================================================================ #
+
+# --- Fast Training (lower sample efficiency, faster wall time) ---
+# num_updates = 300
+# steps_per_update = 1024
+# num_epochs = 3
+# batch_size = 128
+# policy_lr = 5e-4
+# value_lr = 5e-4
+
+# --- Conservative (more stable, higher sample efficiency) ---
+# steps_per_update = 4096
+# num_epochs = 10
+# clip_epsilon = 0.1
+# policy_lr = 1e-4
+# value_lr = 1e-4
+
+# --- Strong Exploration (for harder envs) ---
+# entropy_coef = 0.05
+# gae_lambda = 0.98
+# gamma = 0.995
+
+# --- Larger Networks (for complex state spaces) ---
+# policy_hidden_layers = [256, 256, 128]
+# value_hidden_layers = [256, 256, 128]
+# policy_hidden_layers_activation = "torch.nn.Tanh"
+
+# ============================================================================ #
+#                              Hyperparameter Tips                             #
+# ============================================================================ #
+
+# 1. Start with default config above, it should work reasonably well
+# 2. If learning is unstable: decrease policy_lr, increase num_epochs
+# 3. If learning is too slow: increase steps_per_update, increase learning rates
+# 4. If test performance is poor: increase entropy_coef (more exploration)
+# 5. If training is too slow: decrease steps_per_update, num_epochs
+# 6. Monitor KL divergence: should be close to target_kl
+#    - If KL too high: β will increase automatically (good!)
+#    - If KL too low: β will decrease automatically (good!)
+# 7. Monitor entropy: should decrease over time but not to 0
+#    - If entropy → 0 too fast: increase entropy_coef
+#    - If entropy stays high: decrease entropy_coef or policy is not learning
+# 8. Value loss should decrease steadily
+#    - If not: increase value_lr or value network size
+# 9. PPO is quite robust! Most hyperparameters work in a wide range
+
+# ============================================================================ #
+#                         Expected Training Performance                        #
+# ============================================================================ #
+
+# With default config:
+# - Updates 0-50: Random exploration, reward around -200 to 0
+# - Updates 50-150: Learning to hover, reward improves to 0-100
+# - Updates 150-300: Learning to land, reward 100-200
+# - Updates 300-500: Consistent landing, reward > 200
+# - Total training time: ~10-30 minutes on CPU (depends on machine)
+# - Total environment steps: 500 * 2048 = 1,024,000 steps
+
+# Signs of good learning:
+# - Entropy decreases gradually (policy becomes more deterministic)
+# - KL stays near target_kl (policy changes at reasonable rate)
+# - Value loss decreases (value function learns to predict returns)
+# - Policy loss stabilizes after initial decrease
+# - Test reward increases monotonically (with some variance)
+
+# ============================================================================ #

@@ -25,6 +25,15 @@ wheels = [
 ]
 
 [[package]]
+name = "array-api-compat"
+version = "1.13.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/68/36/f799b36d7025a92a23819f9f06541babdb84b6fd0bd4253f8be2eca348a4/array_api_compat-1.13.0.tar.gz", hash = "sha256:8b83a56aa8b9477472fee37f7731968dd213e20c198a05ac49caeff9b03f48a6", size = 103065, upload-time = "2025-12-28T11:26:57.734Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/df/5d/493b1b5528ab5072feae30821ff3a07b7a0474213d548efb1fdf135f85c1/array_api_compat-1.13.0-py3-none-any.whl", hash = "sha256:c15026a0ddec42815383f07da285472e1b1ff2e632eb7afbcfe9b08fcbad9bf1", size = 58585, upload-time = "2025-12-28T11:26:56.081Z" },
+]
+
+[[package]]
 name = "box2d"
 version = "2.3.10"
 source = { registry = "https://pypi.org/simple" }
@@ -88,15 +97,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a9/95/a3dbbb5028f35eafb79008e7522a75244477d2838f38cbb722248dabc2a8/cycler-0.12.1.tar.gz", hash = "sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c", size = 7615, upload-time = "2023-10-07T05:32:18.335Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e7/05/c19819d5e3d95294a6f5947fb9b9629efb316b96de511b418c53d245aae6/cycler-0.12.1-py3-none-any.whl", hash = "sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30", size = 8321, upload-time = "2023-10-07T05:32:16.783Z" },
-]
-
-[[package]]
-name = "einops"
-version = "0.8.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e5/81/df4fbe24dff8ba3934af99044188e20a98ed441ad17a274539b74e82e126/einops-0.8.1.tar.gz", hash = "sha256:de5d960a7a761225532e0f1959e5315ebeafc0cd43394732f103ca44b9837e84", size = 54805, upload-time = "2025-02-09T03:17:00.434Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/87/62/9773de14fe6c45c23649e98b83231fffd7b9892b6cf863251dc2afa73643/einops-0.8.1-py3-none-any.whl", hash = "sha256:919387eb55330f5757c6bea9165c5ff5cfe63a642682ea788a6d472576d81737", size = 64359, upload-time = "2025-02-09T03:17:01.998Z" },
 ]
 
 [[package]]
@@ -548,16 +548,6 @@ wheels = [
 ]
 
 [[package]]
-name = "sumtree"
-version = "0.2.7"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/56/fd/d5592a38805cc43b2dc949086fd4e4454b29ace72bbaf2a047abe712b0cc/sumtree-0.2.7.tar.gz", hash = "sha256:910fe6f0eab9a74bc8384d9d4b3f48cd3f4f3e780a515501e9bf0621791aec7e", size = 13034, upload-time = "2023-12-08T12:48:50.744Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/22/cd3f921d431967455bbbf8dac22c61469ac327e00becb4fe227301653d56/sumtree-0.2.7-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:234aeb9241f531b894bf2ab5f7bb4fe744d8ef394c0d4c40e1186b5d958142ee", size = 1191725, upload-time = "2023-12-08T12:47:51.885Z" },
-    { url = "https://files.pythonhosted.org/packages/d1/7e/f7c39d225c83854baf27c750bb681452101e7fc7ba649fc738e83c605754/sumtree-0.2.7-cp313-cp313-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:ae6c79fe08aca521d53f185709955197a9427ee4f0f2581a1f2c0424d8e46320", size = 1201067, upload-time = "2023-12-08T12:47:53.837Z" },
-]
-
-[[package]]
 name = "swig"
 version = "4.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -676,13 +666,12 @@ name = "tp1-2"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "einops" },
+    { name = "array-api-compat" },
     { name = "gymnasium", extra = ["box2d", "classic-control"] },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "pydantic" },
     { name = "rich" },
-    { name = "sumtree" },
     { name = "swig" },
     { name = "tensorboard" },
     { name = "torch", version = "2.9.1", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
@@ -691,13 +680,12 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "einops", specifier = ">=0.8.1" },
+    { name = "array-api-compat", specifier = ">=1.13.0" },
     { name = "gymnasium", extras = ["box2d", "classic-control"], specifier = ">=1.2.3" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "numpy", specifier = ">=2.4.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "rich", specifier = ">=14.2.0" },
-    { name = "sumtree", specifier = ">=0.2.7" },
     { name = "swig", specifier = ">=4.4.1" },
     { name = "tensorboard", specifier = ">=2.20.0" },
     { name = "torch", specifier = ">=2.9.1", index = "https://download.pytorch.org/whl/cpu" },

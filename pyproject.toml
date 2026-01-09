@@ -6,31 +6,23 @@ readme = "README.md"
 authors = [{ name = "arnaud-ma", email = "arnaudma.code@gmail.com" }]
 requires-python = ">=3.13, <3.14"
 dependencies = [
-    "einops>=0.8.1",
+    "array-api-compat>=1.13.0",
     "gymnasium[box2d,classic-control]>=1.2.3",
     "matplotlib>=3.10.8",
     "numpy>=2.4.0",
     "pydantic>=2.12.5",
     "rich>=14.2.0",
-    "sumtree>=0.2.7",
     "swig>=4.4.1",
     "tensorboard>=2.20.0",
     "torch>=2.9.1",
 ]
 
-[project.scripts]
-tp1-2 = "tp1_2:main"
-
-[build-system]
-requires = ["uv_build>=0.9.21,<0.10.0"]
-build-backend = "uv_build"
-
-
+# choisir la source de torch (cpu ou gpu)
 [tool.uv.sources]
 torch = [{ index = "pytorch-cpu" }]
 # torch = [{ index = "pytorch-cu128" }]
 
-# pour installer pytorch cpu-only
+# pour installer pytorch cpu/gpu selon la machine
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
@@ -41,6 +33,16 @@ name = "pytorch-cu128"
 url = "https://download.pytorch.org/whl/cu128"
 explicit = true
 
+[build-system]
+requires = ["uv_build>=0.9.21,<0.10.0"]
+build-backend = "uv_build"
+
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = ["pydantic.BaseModel"]
+
+[tool.ruff.lint.pep8-naming]
+extend-ignore-names = ["current_Q", "target_Q"]
+
+[tool.ruff.lint]
+allowed-confusables = ["α", "γ"]

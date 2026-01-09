@@ -1,0 +1,77 @@
+# ---------------------------------------------------------------------------- #
+#                                 Environnement                                 #
+# ---------------------------------------------------------------------------- #
+env = "CartPole-v1"
+seed = 6
+render_mode = "terminal"
+freq_verbose_train = 100
+freq_verbose_test = 1
+freq_animate_test = 1
+freq_animate_train = 0
+
+device = "cpu"
+
+max_length_train = 500
+max_length_test = 500
+
+# ---------------------------------------------------------------------------- #
+#                          Entraînement et évaluation                          #
+# ---------------------------------------------------------------------------- #
+nb_episodes = 5000
+freq_test = 50
+nb_tests = 100
+
+freq_save = 1000
+
+# ---------------------------------------------------------------------------- #
+#                                  Exploration                                 #
+# ---------------------------------------------------------------------------- #
+epsilon_start = 0.9
+epsilon_min = 0.0001
+epsilon_decay = 0.9999
+
+# ---------------------------------------------------------------------------- #
+#                                 Apprentissage                                #
+# ---------------------------------------------------------------------------- #
+
+gamma = 0.99
+
+batch_size = 100
+
+learning_rate = 0.0003
+
+optimizer = "torch.optim:Adam"
+
+value_loss = "torch.nn:SmoothL1Loss"
+
+train_freq = 1
+use_target_network = false
+target_update_freq = 100   # 1000
+target_soft_update = 0.0
+# clip_grad_norm = 10.0      # or 0 for no clipping
+
+stop_when_test_higher_than = inf
+
+# ---------------------------------------------------------------------------- #
+#                              Reseau de neurones                              #
+# ---------------------------------------------------------------------------- #
+
+feature_extractor = "tp1_2.feature_extractor:NothingToDo"
+
+hidden_layers = [200]
+
+hidden_layers_activation = "torch.nn:Tanh"
+
+final_layer_activation = "torch.nn:Identity"
+
+dropout = 0.0
+
+# ---------------------------------------------------------------------------- #
+#                                 Replay Buffer                                #
+# ---------------------------------------------------------------------------- #
+
+replay_memory_capacity = 10000
+
+replay_memory_min_size = 500
+
+prioritized_replay = true

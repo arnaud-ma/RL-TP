@@ -1,9 +1,13 @@
-from typing import Protocol, override, runtime_checkable
+from __future__ import annotations
 
-import numpy as np
-import numpy.typing as npt
+from typing import TYPE_CHECKING, Protocol, override, runtime_checkable
 
-from tp1_2.gym_env import DualEnvWrapper
+if TYPE_CHECKING:
+    import numpy as np
+    import numpy.typing as npt
+
+    type ArrayF32 = npt.NDArray[np.float32]
+    from tp1_2.gym_env import DualEnvWrapper
 
 
 @runtime_checkable
@@ -14,7 +18,7 @@ class FeatureExtractor(Protocol):
         """Number of features extracted."""
         ...
 
-    def get_features(self, obs: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def get_features(self, observation: ArrayF32) -> ArrayF32:
         """Extract features from observation.
 
         Modify the shape if necessary to return a 2D array of shape (1, nb_features).
@@ -32,5 +36,6 @@ class NothingToDo(FeatureExtractor):
         return self._out_size
 
     @override
-    def get_features(self, obs: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
-        return obs.reshape(1, -1)
+    def get_features(self, observation: ArrayF32) -> ArrayF32:
+        # obs.unsqueeze(0)
+        return observation.reshape(1, -1)

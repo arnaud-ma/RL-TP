@@ -1,3 +1,4 @@
+import math
 import statistics
 import subprocess
 import threading
@@ -51,8 +52,6 @@ class TensorboardLogger(UserDict):
 
     Args:
         writer (SummaryWriter): TensorBoard SummaryWriter instance for logging metrics.
-        in_term (bool, optional): Whether to also print logs to terminal.
-            Defaults to True.
 
     Methods:
         log(step: int): Computes mean of buffered values, logs to TensorBoard,
@@ -71,25 +70,38 @@ class TensorboardLogger(UserDict):
         >>> logger.log(step=1)  # Logs mean loss (0.4) to TensorBoard
     """
 
-    def __init__(self, writer: SummaryWriter, *, in_term: bool = True):
+    def __init__(self, writer: SummaryWriter):
         super().__init__()
         self.writer = writer
         self._buffer = defaultdict(list[float])
-        self.in_term = in_term
         self.console = rich.console.Console()
 
-    def _print_table(self, step: int) -> None:
+    @staticmethod
+    def _compute_confidence_interval(values: list[float], confidence=0.95):
+        min_samples_for_stdev = 2
+        mean = statistics.fmean(values)
+        n = len(values)
+        if len(values) < min_samples_for_stdev:
+            return mean, 0.0
+
+        stdev = statistics.stdev(values)
+        z_score = math.erf(confidence) * math.sqrt(2)
+        h = stdev * z_score / math.sqrt(n)
+        return mean, h
+
+    def _print_table(self, step: int, confidence=0.95) -> None:
         table = rich.table.Table(title=f"Step {step}")
         table.add_column("Metric", style="cyan", no_wrap=True)
         table.add_column("Value", style="green", justify="right")
 
         for key, values in self._buffer.items():
-            mean_value = statistics.fmean(values)
-            table.add_row(key, f"{mean_value:.4f}")
+            mean, ci = self._compute_confidence_interval(values, confidence)
+            mean_pr = f"{mean:.4f}" if ci == 0.0 else f"{mean:.4f} ± {ci:.4f}"
+            table.add_row(key, mean_pr)
 
         self.console.print(table)
 
-    def log(self, step: int):
+    def log(self, step: int, *, verbose: bool = True) -> None:
         if not self._buffer:
             return
 
@@ -98,13 +110,20 @@ class TensorboardLogger(UserDict):
             mean_value = statistics.fmean(values)
             self.writer.add_scalar(key, mean_value, step)
             parts.append(f"{key}: {mean_value:.4f}")
-        if self.in_term:
+        if verbose:
             self._print_table(step)
         self._buffer.clear()
 
-    def direct_log(self, key: str, value: float, step: int) -> None:
+    def direct_log(
+        self,
+        key: str,
+        value: float,
+        step: int,
+        *,
+        verbose: bool = True,
+    ) -> None:
         self.writer.add_scalar(key, value, step)
-        if self.in_term:
+        if verbose:
             self.console.print(
                 f"[bold blue][Step {step}][/bold blue] {key}: {value:.4f}",
             )
