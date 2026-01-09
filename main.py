@@ -43,4 +43,4 @@ def main_ppo():
 
 
 if __name__ == "__main__":
-    main_ppo()
+    main()
