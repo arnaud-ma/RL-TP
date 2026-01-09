@@ -19,6 +19,8 @@
 
 #outline()
 
+Le code est disponible ici: https://github.com/arnaud-ma/RL-TP
+
 = Environnement de code / configuration
 
 L'utilisation de `uv` simplifie les choses:
